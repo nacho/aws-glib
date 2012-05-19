@@ -1,0 +1,7 @@
+-------------------------------------------------------------------------------
+                  Aws-GLib - Amazon Web Services for GLib
+-------------------------------------------------------------------------------
+
+This library provides the ability to communicate with Amazon Web Services.
+Currently, it only supports basic S3 support.
+
