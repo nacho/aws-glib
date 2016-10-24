@@ -40,13 +40,13 @@ typedef struct
 G_DEFINE_TYPE_WITH_PRIVATE (AwsS3Client, aws_s3_client, SOUP_TYPE_SESSION)
 
 enum {
-   PROP_0,
-   PROP_CREDENTIALS,
-   PROP_HOST,
-   PROP_PORT,
-   PROP_PORT_SET,
-   PROP_SECURE,
-   N_PROPS
+  PROP_0,
+  PROP_CREDENTIALS,
+  PROP_HOST,
+  PROP_PORT,
+  PROP_PORT_SET,
+  PROP_SECURE,
+  N_PROPS
 };
 
 static GParamSpec *properties [N_PROPS];
@@ -591,5 +591,5 @@ aws_s3_client_init (AwsS3Client *client)
 GQuark
 aws_s3_client_error_quark (void)
 {
-   return g_quark_from_static_string("aws-s3-client-error-quark");
+  return g_quark_from_static_string ("aws-s3-client-error-quark");
 }
