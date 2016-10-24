@@ -58,9 +58,9 @@ AC_SUBST(AWS_VERSION)
 dnl **************************************************************************
 dnl Check for Required Modules
 dnl **************************************************************************
-PKG_CHECK_MODULES(GIO,     [gio-2.0 >= 2.26])
-PKG_CHECK_MODULES(GOBJECT, [gobject-2.0 >= 2.26])
-PKG_CHECK_MODULES(SOUP,    [libsoup-2.4 >= 2.32])
+PKG_CHECK_MODULES(GIO,     [gio-2.0 >= 2.46])
+PKG_CHECK_MODULES(GOBJECT, [gobject-2.0 >= 2.46])
+PKG_CHECK_MODULES(SOUP,    [libsoup-2.4 >= 2.54])
 
 
 dnl **************************************************************************
@@ -78,7 +78,6 @@ AS_CASE([$enable_debug],
 	[yes], [
 		CFLAGS="$CFLAGS -g"
 		CFLAGS="$CFLAGS -Wall"
-		CFLAGS="$CFLAGS -Werror"
 		CFLAGS="$CFLAGS -Wold-style-definition"
 		CFLAGS="$CFLAGS -Wdeclaration-after-statement"
 		CFLAGS="$CFLAGS -Wredundant-decls"

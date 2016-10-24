@@ -16,148 +16,165 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <glib/gi18n.h>
 #include <string.h>
 
 #include "aws-credentials.h"
 
-G_DEFINE_TYPE(AwsCredentials, aws_credentials, G_TYPE_OBJECT)
-
-struct _AwsCredentialsPrivate
+typedef struct
 {
    gchar *access_key;
    gchar *secret_key;
+} AwsCredentialsPrivate;
+
+struct _AwsCredentials
+{
+  GObject parent_instance;
 };
 
-enum
-{
+G_DEFINE_TYPE_WITH_PRIVATE (AwsCredentials, aws_credentials, G_TYPE_OBJECT)
+
+enum {
    PROP_0,
    PROP_ACCESS_KEY,
    PROP_SECRET_KEY,
-   LAST_PROP
+   N_PROPS
 };
 
-static GParamSpec *gParamSpecs[LAST_PROP];
+static GParamSpec *properties [N_PROPS];
+
+static void
+str_zero_and_free (gchar *str)
+{
+  if (str != NULL)
+    {
+      /* We need something more likely to not be
+       * optimized out here...
+       */
+      memset (str, 0, strlen (str));
+      g_free (str);
+    }
+}
 
 AwsCredentials *
 aws_credentials_new (const gchar *access_key,
                      const gchar *secret_key)
 {
-   return g_object_new(AWS_TYPE_CREDENTIALS,
+  return g_object_new (AWS_TYPE_CREDENTIALS,
                        "access-key", access_key,
                        "secret-key", secret_key,
                        NULL);
 }
 
 const gchar *
-aws_credentials_get_access_key (AwsCredentials *credentials)
+aws_credentials_get_access_key (AwsCredentials *self)
 {
-   g_return_val_if_fail(AWS_IS_CREDENTIALS(credentials), NULL);
-   return credentials->priv->access_key;
+  AwsCredentialsPrivate *priv = aws_credentials_get_instance_private (self);
+
+  g_return_val_if_fail (AWS_IS_CREDENTIALS (self), NULL);
+
+  return priv->access_key;
 }
 
 const gchar *
-aws_credentials_get_secret_key (AwsCredentials *credentials)
+aws_credentials_get_secret_key (AwsCredentials *self)
 {
-   g_return_val_if_fail(AWS_IS_CREDENTIALS(credentials), NULL);
-   return credentials->priv->secret_key;
+  AwsCredentialsPrivate *priv = aws_credentials_get_instance_private (self);
+
+  g_return_val_if_fail (AWS_IS_CREDENTIALS (self), NULL);
+
+  return priv->secret_key;
 }
 
 void
-aws_credentials_set_access_key (AwsCredentials *credentials,
+aws_credentials_set_access_key (AwsCredentials *self,
                                 const gchar    *access_key)
 {
-   g_return_if_fail(AWS_IS_CREDENTIALS(credentials));
+  AwsCredentialsPrivate *priv = aws_credentials_get_instance_private (self);
 
-   access_key = access_key ? access_key : "";
-   g_free(credentials->priv->access_key);
-   credentials->priv->access_key = g_strdup(access_key);
-   g_object_notify_by_pspec(G_OBJECT(credentials),
-                            gParamSpecs[PROP_ACCESS_KEY]);
+  g_return_if_fail (AWS_IS_CREDENTIALS (self));
+
+  if (g_strcmp0 (priv->access_key, access_key) != 0)
+    {
+      str_zero_and_free (priv->access_key);
+      priv->access_key = g_strdup (priv->access_key);
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_ACCESS_KEY]);
+    }
 }
 
 void
-aws_credentials_set_secret_key (AwsCredentials *credentials,
+aws_credentials_set_secret_key (AwsCredentials *self,
                                 const gchar    *secret_key)
 {
-   g_return_if_fail(AWS_IS_CREDENTIALS(credentials));
+  AwsCredentialsPrivate *priv = aws_credentials_get_instance_private (self);
 
-   secret_key = secret_key ? secret_key : "";
-   g_free(credentials->priv->secret_key);
-   credentials->priv->secret_key = g_strdup(secret_key);
-   g_object_notify_by_pspec(G_OBJECT(credentials),
-                            gParamSpecs[PROP_SECRET_KEY]);
+  g_return_if_fail (AWS_IS_CREDENTIALS (self));
+
+  if (g_strcmp0 (priv->secret_key, secret_key) != 0)
+    {
+      str_zero_and_free (priv->secret_key);
+      priv->secret_key = g_strdup (priv->secret_key);
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_SECRET_KEY]);
+    }
 }
 
 /**
  * aws_credentials_sign:
- * @credentials: (in): A #AwsCredentials.
- * @text: (in): The text to sign.
- * @text_len: (in): The length of @text or -1 if it is NUL-terminated.
+ * @self: A #AwsCredentials.
+ * @text: The text to sign.
+ * @text_len: The length of @text or -1 if it is NUL-terminated.
  *
  * Generate a signed checksum for the given text.
  *
  * Returns: (transfer full): The signature.
  */
 gchar *
-aws_credentials_sign (AwsCredentials *credentials,
+aws_credentials_sign (AwsCredentials *self,
                       const gchar    *text,
                       gssize          text_len,
                       GChecksumType   digest_type)
 {
-   AwsCredentialsPrivate *priv;
-   guint8 *digest = NULL;
-   gchar *signature;
-   GHmac *hmac;
-   gsize digest_len = 0;
+  AwsCredentialsPrivate *priv = aws_credentials_get_instance_private (self);
+  g_autofree guint8 *digest = NULL;
+  g_autofree gchar *signature = NULL;
+  g_autoptr(GHmac) hmac = NULL;
+  gsize digest_len = 0;
 
-   g_return_val_if_fail(AWS_IS_CREDENTIALS(credentials), NULL);
-   g_return_val_if_fail(text, NULL);
-   g_return_val_if_fail(digest_type == G_CHECKSUM_SHA1 ||
+  g_return_val_if_fail (AWS_IS_CREDENTIALS (self), NULL);
+  g_return_val_if_fail (text != NULL, NULL);
+  g_return_val_if_fail (priv->secret_key != NULL, NULL);
+  g_return_val_if_fail (digest_type == G_CHECKSUM_SHA1 ||
                         digest_type == G_CHECKSUM_SHA256, NULL);
 
-   priv = credentials->priv;
+  if (text_len < 0)
+    text_len = strlen(text);
 
-   if (text_len < 0) {
-      text_len = strlen(text);
-   }
-
-   if ((digest_len = g_checksum_type_get_length(digest_type)) < 1) {
-      g_warning("Invalid digest type requested!");
+  if ((digest_len = g_checksum_type_get_length (digest_type)) < 1)
+    {
+      g_warning ("Invalid digest type requested!");
       return NULL;
-   }
+    }
 
-   digest = g_malloc(digest_len);
-   hmac = g_hmac_new(digest_type, (const guint8 *)priv->secret_key,
-                     strlen(priv->secret_key));
-   g_hmac_update(hmac, (guint8 *)text, text_len);
-   g_hmac_get_digest(hmac, digest, &digest_len);
-   signature = g_base64_encode(digest, digest_len);
+  digest = g_malloc (digest_len);
+  hmac = g_hmac_new (digest_type,
+                     (const guint8 *)priv->secret_key,
+                     strlen (priv->secret_key));
+  g_hmac_update (hmac, (const guint8 *)text, text_len);
+  g_hmac_get_digest (hmac, digest, &digest_len);
+  signature = g_base64_encode (digest, digest_len);
 
-   g_free(digest);
-   g_hmac_unref(hmac);
-
-   return signature;
+  return g_steal_pointer (&signature);
 }
 
 static void
 aws_credentials_finalize (GObject *object)
 {
-   AwsCredentialsPrivate *priv;
+  AwsCredentials *self = (AwsCredentials *)object;
+  AwsCredentialsPrivate *priv = aws_credentials_get_instance_private (self);
 
-   priv = AWS_CREDENTIALS(object)->priv;
+  g_clear_pointer (&priv->access_key, str_zero_and_free);
+  g_clear_pointer (&priv->secret_key, str_zero_and_free);
 
-   if (priv->access_key) {
-      memset(priv->access_key, 0, strlen(priv->access_key));
-      g_free(priv->access_key);
-   }
-
-   if (priv->secret_key) {
-      memset(priv->secret_key, 0, strlen(priv->secret_key));
-      g_free(priv->secret_key);
-   }
-
-   G_OBJECT_CLASS(aws_credentials_parent_class)->finalize(object);
+  G_OBJECT_CLASS (aws_credentials_parent_class)->finalize (object);
 }
 
 static void
@@ -166,18 +183,21 @@ aws_credentials_get_property (GObject    *object,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-   AwsCredentials *credentials = AWS_CREDENTIALS(object);
+  AwsCredentials *credentials = AWS_CREDENTIALS (object);
 
-   switch (prop_id) {
-   case PROP_ACCESS_KEY:
-      g_value_set_string(value, aws_credentials_get_access_key(credentials));
+  switch (prop_id)
+    {
+    case PROP_ACCESS_KEY:
+      g_value_set_string (value, aws_credentials_get_access_key (credentials));
       break;
-   case PROP_SECRET_KEY:
-      g_value_set_string(value, aws_credentials_get_secret_key(credentials));
+
+    case PROP_SECRET_KEY:
+      g_value_set_string (value, aws_credentials_get_secret_key (credentials));
       break;
-   default:
+
+    default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-   }
+    }
 }
 
 static void
@@ -186,56 +206,52 @@ aws_credentials_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-   AwsCredentials *credentials = AWS_CREDENTIALS(object);
+  AwsCredentials *credentials = AWS_CREDENTIALS (object);
 
-   switch (prop_id) {
-   case PROP_ACCESS_KEY:
-      aws_credentials_set_access_key(credentials, g_value_get_string(value));
+  switch (prop_id)
+    {
+    case PROP_ACCESS_KEY:
+      aws_credentials_set_access_key (credentials, g_value_get_string (value));
       break;
-   case PROP_SECRET_KEY:
-      aws_credentials_set_secret_key(credentials, g_value_get_string(value));
+
+    case PROP_SECRET_KEY:
+      aws_credentials_set_secret_key (credentials, g_value_get_string (value));
       break;
-   default:
+
+    default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-   }
+    }
 }
 
 static void
 aws_credentials_class_init (AwsCredentialsClass *klass)
 {
-   GObjectClass *object_class;
+   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-   object_class = G_OBJECT_CLASS(klass);
    object_class->finalize = aws_credentials_finalize;
    object_class->get_property = aws_credentials_get_property;
    object_class->set_property = aws_credentials_set_property;
-   g_type_class_add_private(object_class, sizeof(AwsCredentialsPrivate));
 
-   gParamSpecs[PROP_ACCESS_KEY] =
-      g_param_spec_string("access-key",
-                          _("Access Key"),
-                          _("Amazon AWS Access Key."),
-                          "",
-                          G_PARAM_READWRITE);
-   g_object_class_install_property(object_class, PROP_ACCESS_KEY,
-                                   gParamSpecs[PROP_ACCESS_KEY]);
+   properties [PROP_ACCESS_KEY] =
+      g_param_spec_string ("access-key",
+                           "Access Key",
+                           "Amazon AWS Access Key.",
+                           "",
+                           G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
 
-   gParamSpecs[PROP_SECRET_KEY] =
-      g_param_spec_string("secret-key",
-                          _("Secret Key"),
-                          _("Amazon AWS Secret Key."),
-                          "",
-                          G_PARAM_READWRITE);
-   g_object_class_install_property(object_class, PROP_SECRET_KEY,
-                                   gParamSpecs[PROP_SECRET_KEY]);
+   properties [PROP_SECRET_KEY] =
+      g_param_spec_string ("secret-key",
+                           "Secret Key",
+                           "Amazon AWS Secret Key.",
+                           "",
+                           G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+   g_object_class_install_properties (object_class, N_PROPS, properties);
 }
 
 static void
 aws_credentials_init (AwsCredentials *credentials)
 {
-   credentials->priv = G_TYPE_INSTANCE_GET_PRIVATE(credentials,
-                                                   AWS_TYPE_CREDENTIALS,
-                                                   AwsCredentialsPrivate);
-   aws_credentials_set_access_key(credentials, "");
-   aws_credentials_set_secret_key(credentials, "");
+  aws_credentials_set_access_key (credentials, "");
+  aws_credentials_set_secret_key (credentials, "");
 }

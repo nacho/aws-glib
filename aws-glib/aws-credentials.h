@@ -23,41 +23,19 @@
 
 G_BEGIN_DECLS
 
-#define AWS_TYPE_CREDENTIALS            (aws_credentials_get_type())
-#define AWS_CREDENTIALS(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), AWS_TYPE_CREDENTIALS, AwsCredentials))
-#define AWS_CREDENTIALS_CONST(obj)      (G_TYPE_CHECK_INSTANCE_CAST ((obj), AWS_TYPE_CREDENTIALS, AwsCredentials const))
-#define AWS_CREDENTIALS_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  AWS_TYPE_CREDENTIALS, AwsCredentialsClass))
-#define AWS_IS_CREDENTIALS(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AWS_TYPE_CREDENTIALS))
-#define AWS_IS_CREDENTIALS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  AWS_TYPE_CREDENTIALS))
-#define AWS_CREDENTIALS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  AWS_TYPE_CREDENTIALS, AwsCredentialsClass))
+#define AWS_TYPE_CREDENTIALS (aws_credentials_get_type())
 
-typedef struct _AwsCredentials        AwsCredentials;
-typedef struct _AwsCredentialsClass   AwsCredentialsClass;
-typedef struct _AwsCredentialsPrivate AwsCredentialsPrivate;
-
-struct _AwsCredentials
-{
-   GObject parent;
-
-   /*< private >*/
-   AwsCredentialsPrivate *priv;
-};
-
-struct _AwsCredentialsClass
-{
-   GObjectClass parent_class;
-};
+G_DECLARE_FINAL_TYPE (AwsCredentials, aws_credentials, AWS, CREDENTIALS, GObject)
 
 AwsCredentials *aws_credentials_new            (const gchar    *access_key,
                                                 const gchar    *secret_key);
-const gchar    *aws_credentials_get_access_key (AwsCredentials *credentials);
-const gchar    *aws_credentials_get_secret_key (AwsCredentials *credentials);
-GType           aws_credentials_get_type       (void) G_GNUC_CONST;
-void            aws_credentials_set_access_key (AwsCredentials *credentials,
+const gchar    *aws_credentials_get_access_key (AwsCredentials *self);
+void            aws_credentials_set_access_key (AwsCredentials *self,
                                                 const gchar    *access_key);
-void            aws_credentials_set_secret_key (AwsCredentials *credentials,
+const gchar    *aws_credentials_get_secret_key (AwsCredentials *self);
+void            aws_credentials_set_secret_key (AwsCredentials *self,
                                                 const gchar    *secret_key);
-gchar          *aws_credentials_sign           (AwsCredentials *credentials,
+gchar          *aws_credentials_sign           (AwsCredentials *self,
                                                 const gchar    *text,
                                                 gssize          text_len,
                                                 GChecksumType   digest_type);
