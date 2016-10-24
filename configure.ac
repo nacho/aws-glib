@@ -2,7 +2,7 @@ dnl **************************************************************************
 dnl Versioning Macros
 dnl **************************************************************************
 m4_define([aws_major_version], [0])
-m4_define([aws_minor_version], [1])
+m4_define([aws_minor_version], [3])
 m4_define([aws_micro_version], [1])
 m4_define([aws_version],
           [aws_major_version.aws_minor_version.aws_micro_version])
