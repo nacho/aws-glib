@@ -20,62 +20,61 @@
 #define AWS_S3_CLIENT_H
 
 #include <gio/gio.h>
-#include <libsoup/soup-session-async.h>
+#include <libsoup/soup.h>
 
 #include "aws-credentials.h"
 
 G_BEGIN_DECLS
 
-#define AWS_TYPE_S3_CLIENT            (aws_s3_client_get_type())
-#define AWS_S3_CLIENT_ERROR           (aws_s3_client_error_quark())
-#define AWS_S3_CLIENT(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), AWS_TYPE_S3_CLIENT, AwsS3Client))
-#define AWS_S3_CLIENT_CONST(obj)      (G_TYPE_CHECK_INSTANCE_CAST ((obj), AWS_TYPE_S3_CLIENT, AwsS3Client const))
-#define AWS_S3_CLIENT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  AWS_TYPE_S3_CLIENT, AwsS3ClientClass))
-#define AWS_IS_S3_CLIENT(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), AWS_TYPE_S3_CLIENT))
-#define AWS_IS_S3_CLIENT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  AWS_TYPE_S3_CLIENT))
-#define AWS_S3_CLIENT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  AWS_TYPE_S3_CLIENT, AwsS3ClientClass))
+#define AWS_TYPE_S3_CLIENT  (aws_s3_client_get_type())
+#define AWS_S3_CLIENT_ERROR (aws_s3_client_error_quark())
 
-typedef struct _AwsS3Client        AwsS3Client;
-typedef struct _AwsS3ClientClass   AwsS3ClientClass;
-typedef enum   _AwsS3ClientError   AwsS3ClientError;
-typedef struct _AwsS3ClientPrivate AwsS3ClientPrivate;
+G_DECLARE_DERIVABLE_TYPE (AwsS3Client, aws_s3_client, AWS, S3_CLIENT, SoupSession)
+
+struct _AwsS3ClientClass
+{
+  SoupSessionClass parent_instance;
+
+  gpointer _reserved1;
+  gpointer _reserved2;
+  gpointer _reserved3;
+  gpointer _reserved4;
+  gpointer _reserved5;
+  gpointer _reserved6;
+  gpointer _reserved7;
+  gpointer _reserved8;
+  gpointer _reserved9;
+  gpointer _reserved10;
+  gpointer _reserved11;
+  gpointer _reserved12;
+  gpointer _reserved13;
+  gpointer _reserved14;
+  gpointer _reserved15;
+  gpointer _reserved16;
+};
 
 typedef gboolean (*AwsS3ClientDataHandler) (AwsS3Client *client,
                                             SoupMessage *message,
                                             SoupBuffer  *buffer,
                                             gpointer     user_data);
 
-enum _AwsS3ClientError
+typedef enum
 {
    AWS_S3_CLIENT_ERROR_BAD_REQUEST = 1,
    AWS_S3_CLIENT_ERROR_CANCELLED   = 2,
    AWS_S3_CLIENT_ERROR_UNKNOWN     = 3,
    AWS_S3_CLIENT_ERROR_NOT_FOUND   = 404,
-};
+} AwsS3ClientError;
 
-struct _AwsS3Client
-{
-   SoupSessionAsync parent;
-
-   /*< private >*/
-   AwsS3ClientPrivate *priv;
-};
-
-struct _AwsS3ClientClass
-{
-   SoupSessionAsyncClass parent_class;
-};
-
-GQuark          aws_s3_client_error_quark     (void) G_GNUC_CONST;
-AwsCredentials *aws_s3_client_get_credentials (AwsS3Client             *client);
-void            aws_s3_client_set_credentials (AwsS3Client             *client,
+GQuark          aws_s3_client_error_quark     (void);
+AwsCredentials *aws_s3_client_get_credentials (AwsS3Client             *self);
+void            aws_s3_client_set_credentials (AwsS3Client             *self,
                                                AwsCredentials          *credentials);
-const gchar    *aws_s3_client_get_host        (AwsS3Client             *client);
-guint16         aws_s3_client_get_port        (AwsS3Client             *client);
-gboolean        aws_s3_client_get_port_set    (AwsS3Client             *client);
-gboolean        aws_s3_client_get_secure      (AwsS3Client             *client);
-GType           aws_s3_client_get_type        (void) G_GNUC_CONST;
-void            aws_s3_client_read_async      (AwsS3Client             *client,
+const gchar    *aws_s3_client_get_host        (AwsS3Client             *self);
+guint16         aws_s3_client_get_port        (AwsS3Client             *self);
+gboolean        aws_s3_client_get_port_set    (AwsS3Client             *self);
+gboolean        aws_s3_client_get_secure      (AwsS3Client             *self);
+void            aws_s3_client_read_async      (AwsS3Client             *self,
                                                const gchar             *bucket,
                                                const gchar             *path,
                                                AwsS3ClientDataHandler   handler,
@@ -84,23 +83,23 @@ void            aws_s3_client_read_async      (AwsS3Client             *client,
                                                GCancellable            *cancellable,
                                                GAsyncReadyCallback      callback,
                                                gpointer                 user_data);
-gboolean        aws_s3_client_read_finish     (AwsS3Client             *client,
+gboolean        aws_s3_client_read_finish     (AwsS3Client             *self,
                                                GAsyncResult            *result,
                                                GError                 **error);
-void            aws_s3_client_set_host        (AwsS3Client             *client,
+void            aws_s3_client_set_host        (AwsS3Client             *self,
                                                const gchar             *host);
-void            aws_s3_client_set_port        (AwsS3Client             *client,
+void            aws_s3_client_set_port        (AwsS3Client             *self,
                                                guint16                  port);
-void            aws_s3_client_set_secure      (AwsS3Client             *client,
+void            aws_s3_client_set_secure      (AwsS3Client             *self,
                                                gboolean                 secure);
-void            aws_s3_client_write_async     (AwsS3Client             *client,
+void            aws_s3_client_write_async     (AwsS3Client             *self,
                                                const gchar             *bucket,
                                                const gchar             *path,
                                                GInputStream            *stream,
                                                GCancellable            *cancellable,
                                                GAsyncReadyCallback      callback,
                                                gpointer                 user_data);
-gboolean        aws_s3_client_write_finish    (AwsS3Client             *client,
+gboolean        aws_s3_client_write_finish    (AwsS3Client             *self,
                                                GAsyncResult            *result,
                                                GError                 **error);
 
