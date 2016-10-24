@@ -22,8 +22,8 @@
 
 typedef struct
 {
-   gchar *access_key;
-   gchar *secret_key;
+  gchar *access_key;
+  gchar *secret_key;
 } AwsCredentialsPrivate;
 
 struct _AwsCredentials
@@ -226,27 +226,27 @@ aws_credentials_set_property (GObject      *object,
 static void
 aws_credentials_class_init (AwsCredentialsClass *klass)
 {
-   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-   object_class->finalize = aws_credentials_finalize;
-   object_class->get_property = aws_credentials_get_property;
-   object_class->set_property = aws_credentials_set_property;
+  object_class->finalize = aws_credentials_finalize;
+  object_class->get_property = aws_credentials_get_property;
+  object_class->set_property = aws_credentials_set_property;
 
-   properties [PROP_ACCESS_KEY] =
-      g_param_spec_string ("access-key",
-                           "Access Key",
-                           "Amazon AWS Access Key.",
-                           "",
-                           G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+  properties [PROP_ACCESS_KEY] =
+    g_param_spec_string ("access-key",
+                         "Access Key",
+                         "Amazon AWS Access Key.",
+                         "",
+                         G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
 
-   properties [PROP_SECRET_KEY] =
-      g_param_spec_string ("secret-key",
-                           "Secret Key",
-                           "Amazon AWS Secret Key.",
-                           "",
-                           G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+  properties [PROP_SECRET_KEY] =
+    g_param_spec_string ("secret-key",
+                         "Secret Key",
+                         "Amazon AWS Secret Key.",
+                         "",
+                         G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
 
-   g_object_class_install_properties (object_class, N_PROPS, properties);
+  g_object_class_install_properties (object_class, N_PROPS, properties);
 }
 
 static void

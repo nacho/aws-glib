@@ -60,10 +60,10 @@ typedef gboolean (*AwsS3ClientDataHandler) (AwsS3Client *client,
 
 typedef enum
 {
-   AWS_S3_CLIENT_ERROR_BAD_REQUEST = 1,
-   AWS_S3_CLIENT_ERROR_CANCELLED   = 2,
-   AWS_S3_CLIENT_ERROR_UNKNOWN     = 3,
-   AWS_S3_CLIENT_ERROR_NOT_FOUND   = 404,
+  AWS_S3_CLIENT_ERROR_BAD_REQUEST = 1,
+  AWS_S3_CLIENT_ERROR_CANCELLED   = 2,
+  AWS_S3_CLIENT_ERROR_UNKNOWN     = 3,
+  AWS_S3_CLIENT_ERROR_NOT_FOUND   = 404,
 } AwsS3ClientError;
 
 GQuark          aws_s3_client_error_quark     (void);
@@ -102,7 +102,6 @@ void            aws_s3_client_write_async     (AwsS3Client             *self,
 gboolean        aws_s3_client_write_finish    (AwsS3Client             *self,
                                                GAsyncResult            *result,
                                                GError                 **error);
-
 
 G_END_DECLS
 
