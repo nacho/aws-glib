@@ -207,7 +207,6 @@ aws_s3_client_read_cb (SoupSession *session,
 {
   g_autoptr(GTask) task = user_data;
 
-  g_assert (G_IS_SIMPLE_ASYNC_RESULT (simple));
   g_assert (SOUP_IS_MESSAGE (message));
 
   /* We might have completed in got_chunk() from a handler */
