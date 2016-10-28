@@ -81,18 +81,18 @@ read_state_new (AwsS3ClientDataHandler handler,
 
 /**
  * aws_s3_client_get_credentials:
- * @client: (in): A #AwsS3Client.
+ * @self: An #AwsS3Client.
  *
- * Fetches the #AwsCredentials for @client.
+ * Fetches the #AwsCredentials for @self.
  *
  * Returns: (transfer none): An #AwsCredentials.
  */
 AwsCredentials *
-aws_s3_client_get_credentials (AwsS3Client *client)
+aws_s3_client_get_credentials (AwsS3Client *self)
 {
-  AwsS3ClientPrivate *priv = aws_s3_client_get_instance_private (client);
+  AwsS3ClientPrivate *priv = aws_s3_client_get_instance_private (self);
 
-  g_return_val_if_fail(AWS_IS_S3_CLIENT(client), NULL);
+  g_return_val_if_fail (AWS_IS_S3_CLIENT (self), NULL);
 
   return priv->creds;
 }
